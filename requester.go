@@ -9,8 +9,13 @@ type request struct {
 	timeout float32
 }
 
+type response struct {
+	req     http.Request
+	elapsedTime float32
+}
+
 
 
 func makeRequest(req http.Request, response chan http.Response, progress chan string){
-	//Implement making a request
+
 }

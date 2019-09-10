@@ -1,6 +1,10 @@
 package changi
 
-import "github.com/bradfitz/gomemcache/memcache"
+import (
+	"encoding/json"
+	"github.com/bradfitz/gomemcache/memcache"
+	"log"
+)
 
 var storage *memcache.Client
 
@@ -9,13 +13,34 @@ func connect(connectionString string) {
 }
 
 func disconnect() {
-	//Implement disconnect and destroy for "storage"
+	storage = nil
 }
 
-func fetchRequest(key string) async_request {
+func fetchRequest(key string) (req []*AsyncRequest, status bool) {
 	//Implement decode json and fetch request
+	item, err := storage.Get("request_1")
+	if err != nil {
+		log.Fatal(err)
+		return nil, false
+	}
+
+	if item == nil {
+		log.Fatal("No request were found with the key:" + key)
+		return nil, false
+	}
+
+	var requests []*AsyncRequest
+	_ = json.Unmarshal(item.Value, &requests)
+	return requests, true
 }
 
-func writeRequest(key string, asyncRequest async_request) bool {
-	//Implement encode json and writing for async_request
+func writeResponse(key string, asyncResponse asyncResponse) bool {
+	data, _ := json.Marshal(asyncResponse)
+	err := storage.Set(&memcache.Item{Key: key, Value: data})
+	if err != nil {
+		log.Fatal(err)
+		return false
+	}
+
+	return true
 }
