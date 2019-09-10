@@ -2,10 +2,10 @@ package changi
 
 import "github.com/bradfitz/gomemcache/memcache"
 
-var storage memcache.Client
+var storage *memcache.Client
 
-func connect() {
-	//Implement initialization for "storage"
+func connect(connectionString string) {
+	storage = memcache.New(connectionString)
 }
 
 func disconnect() {

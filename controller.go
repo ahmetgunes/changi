@@ -16,6 +16,6 @@ func start(asyncRequest async_request) {
 	//Start the processes with the controller which waits for responses from the requesters and determines timeouts
 }
 
-func controller(response chan http.Response) {
+func controller(response chan http.Response, ticker chan bool) {
 
 }
