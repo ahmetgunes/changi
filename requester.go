@@ -1,21 +1,23 @@
 package changi
 
-import "net/http"
+import (
+	"fmt"
+	"github.com/ahmetgunes/changi/request"
+	"net/http"
+	"sync"
+)
 
 //@TODO: Implement methods for requests
 
-type request struct {
-	req     http.Request
-	timeout float32
-}
+var client = &http.Client{}
 
-type response struct {
-	req     http.Request
-	elapsedTime float32
-}
-
-
-
-func makeRequest(req http.Request, response chan http.Response, progress chan string){
-
+func makeRequest(req request.Request, responseChan chan request.Response, progress chan string, wg *sync.WaitGroup) {
+	defer wg.Done()
+	//@TODO: Log here
+	//@TODO: Calculate elapsed time and set to response
+	fmt.Println("Starting the request on" + req.Tag)
+	resp, _ := client.Do(req.Req)
+	defer resp.Body.Close()
+	var respStruct = request.Response{Resp: resp, Id: req.Id}
+	responseChan <- respStruct
 }

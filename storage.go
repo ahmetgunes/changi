@@ -2,6 +2,7 @@ package changi
 
 import (
 	"encoding/json"
+	"github.com/ahmetgunes/changi/request"
 	"github.com/bradfitz/gomemcache/memcache"
 	"log"
 )
@@ -16,7 +17,7 @@ func disconnect() {
 	storage = nil
 }
 
-func fetchRequest(key string) (req []*AsyncRequest, status bool) {
+func fetchRequest(key string) (req []*request.AsyncRequest, status bool) {
 	//Implement decode json and fetch request
 	item, err := storage.Get("request_1")
 	if err != nil {
@@ -29,12 +30,12 @@ func fetchRequest(key string) (req []*AsyncRequest, status bool) {
 		return nil, false
 	}
 
-	var requests []*AsyncRequest
+	var requests []*request.AsyncRequest
 	_ = json.Unmarshal(item.Value, &requests)
 	return requests, true
 }
 
-func writeResponse(key string, asyncResponse asyncResponse) bool {
+func writeResponse(key string, asyncResponse request.AsyncResponse) bool {
 	data, _ := json.Marshal(asyncResponse)
 	err := storage.Set(&memcache.Item{Key: key, Value: data})
 	if err != nil {
