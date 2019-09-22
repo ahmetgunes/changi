@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-var mandatoryIds []int
+var mandatoryIds []string
 
 func start(requests []*request.AsyncRequest) {
 	var wg sync.WaitGroup
@@ -30,26 +30,34 @@ func start(requests []*request.AsyncRequest) {
 	wg.Add(count + 1)
 	go controller(responseChan, &wg, count)
 	wg.Wait()
+	defer close(responseChan)
+	defer close(progressChan)
 }
 
-func controller(response chan request.Response, wg *sync.WaitGroup, count int) {
+func controller(response chan request.Response, wg *sync.WaitGroup, count int) bool {
 	defer wg.Done()
 	var ticker = time.NewTicker(1 * time.Millisecond)
-	go func() {
-		for {
-			select {
-			case resp := <-response:
-				for pos, id := range mandatoryIds {
-					if id == resp.Id {
-						removeFromIds(pos)
-					}
+	var tickCount = 10000
+	for {
+		select {
+		case resp := <-response:
+			for pos, id := range mandatoryIds {
+				if id == resp.Id {
+					removeFromIds(pos)
 				}
-				fmt.Println("Response:", resp)
-			case t := <-ticker.C:
-				fmt.Println("Tick at", t)
+			}
+			if len(mandatoryIds) == 0 {
+				return true
+			}
+			fmt.Println("Response:", resp)
+		case t := <-ticker.C:
+			tickCount--
+			fmt.Println("Remaining tick", tickCount, t.Second())
+			if tickCount == 0 {
+				return true
 			}
 		}
-	}()
+	}
 }
 
 func removeFromIds(i int) {
