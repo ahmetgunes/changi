@@ -1,13 +1,16 @@
 package changi
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/ahmetgunes/changi/request"
+	"github.com/bradfitz/gomemcache/memcache"
 	"sync"
 	"time"
 )
 
 var mandatoryIds []string
+var responses []request.AsyncResponse
 
 func start(requests []*request.AsyncRequest) {
 	var wg sync.WaitGroup
@@ -19,7 +22,7 @@ func start(requests []*request.AsyncRequest) {
 
 	count := 0
 	for i, request := range requests {
-		fmt.Println("Starting the request on" + request.Tag)
+		fmt.Println("Starting the request on", request.Id, request.Tag, i)
 		wg.Add(i)
 		if request.Mandatory {
 			mandatoryIds = append(mandatoryIds, request.Id)
@@ -35,32 +38,41 @@ func start(requests []*request.AsyncRequest) {
 }
 
 func controller(response chan request.Response, wg *sync.WaitGroup, count int) bool {
-	defer wg.Done()
 	var ticker = time.NewTicker(1 * time.Millisecond)
 	var tickCount = 10000
+	defer wg.Done()
+	defer ticker.Stop()
 	for {
 		select {
 		case resp := <-response:
-			for pos, id := range mandatoryIds {
-				if id == resp.Id {
-					removeFromIds(pos)
-				}
-			}
+			removeIfMandatory(resp.Id)
+			x, _ := json.Marshal(request.FromHttpResponse(resp))
+			responses = append(responses, x)
+			_ = storage.Set(&memcache.Item{Key: "response_" + resp.Id, Value: x})
 			if len(mandatoryIds) == 0 {
 				return true
 			}
-			fmt.Println("Response:", resp)
-		case t := <-ticker.C:
+			fmt.Println("Response for:", resp.Id)
+		case <-ticker.C:
 			tickCount--
-			fmt.Println("Remaining tick", tickCount, t.Second())
 			if tickCount == 0 {
-				return true
+				fmt.Println("Ticker has reached to zero")
+				if len(mandatoryIds) == 0 {
+					fmt.Println("Ending requester since the ticker is off finally")
+					return true
+				}
 			}
 		}
 	}
 }
 
-func removeFromIds(i int) {
-	mandatoryIds[i] = mandatoryIds[len(mandatoryIds)-1]
-	mandatoryIds = mandatoryIds[:len(mandatoryIds)-1]
+func removeIfMandatory(reqId string) {
+	for pos, id := range mandatoryIds {
+		if id == reqId {
+			lastPos := len(mandatoryIds) - 1
+			mandatoryIds[pos] = mandatoryIds[lastPos]
+			mandatoryIds = mandatoryIds[:lastPos]
+			break
+		}
+	}
 }
