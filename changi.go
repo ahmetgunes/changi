@@ -12,17 +12,15 @@ import (
 
 const configurationFilePath = "github.com/ahmetgunes/changi/configs/file/config.%s.json"
 
-
 var Config configs.Configuration
 var Log *logging.Logger
 
-
 func Init() {
-	Config = configure()
+	configure()
 	Log = logger.Init(Config.LogFile)
 }
 
-func configure() configs.Configuration {
+func configure() {
 	env := os.Getenv("ENV")
 	if env == "" {
 		env = "dev"
@@ -31,8 +29,8 @@ func configure() configs.Configuration {
 	config := configs.Configuration{}
 	err := gonfig.GetConf(configPath, &config)
 	if err != nil {
-		Log.Fatal(err)
+		panic(err)
 	}
 
-	return config
+	Config = config
 }
