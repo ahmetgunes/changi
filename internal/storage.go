@@ -1,10 +1,10 @@
-package storage
+package internal
 
 import (
 	"encoding/json"
+	"github.com/ahmetgunes/changi"
 	"github.com/ahmetgunes/changi/internal/request"
 	"github.com/bradfitz/gomemcache/memcache"
-	"log"
 )
 
 var Storage *memcache.Client
@@ -21,13 +21,11 @@ func FetchRequest(key string) (req []*request.AsyncRequest, status bool) {
 	//Implement decode json and fetch request
 	item, err := Storage.Get(key)
 	if err != nil {
-		log.Fatal(err)
-		return nil, false
+		changi.Log.Fatal(err)
 	}
 
 	if item == nil {
-		log.Fatal("No request were found with the key:" + key)
-		return nil, false
+		changi.Log.Fatal("No request were found with the key:" + key)
 	}
 
 	var requests []*request.AsyncRequest
@@ -39,8 +37,7 @@ func WriteResponse(key string, asyncResponse request.AsyncResponse) bool {
 	data, _ := json.Marshal(asyncResponse)
 	err := Storage.Set(&memcache.Item{Key: key, Value: data})
 	if err != nil {
-		log.Fatal(err)
-		return false
+		changi.Log.Fatal(err)
 	}
 
 	return true
