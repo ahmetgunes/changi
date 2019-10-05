@@ -2,9 +2,8 @@ package internal
 
 import (
 	"encoding/json"
-	"fmt"
+	"github.com/ahmetgunes/changi"
 	"github.com/ahmetgunes/changi/internal/request"
-	"github.com/ahmetgunes/changi/internal/storage"
 	"github.com/bradfitz/gomemcache/memcache"
 	"sync"
 	"time"
@@ -13,7 +12,7 @@ import (
 var mandatoryIds []string
 var responses []request.AsyncResponse
 
-func start(requests []*request.AsyncRequest) {
+func Start(requests []*request.AsyncRequest) {
 	var wg sync.WaitGroup
 	//Open goroutines for each request
 	//Start a ticker
@@ -23,7 +22,7 @@ func start(requests []*request.AsyncRequest) {
 
 	count := 0
 	for i, request := range requests {
-		fmt.Println("Starting the request on", request.Id, request.Tag, i)
+		changi.Log.Info("Starting the request on", request.Id, request.Tag, i)
 		wg.Add(i)
 		if request.Mandatory {
 			mandatoryIds = append(mandatoryIds, request.Id)
@@ -49,17 +48,17 @@ func controller(response chan request.Response, wg *sync.WaitGroup, count int) b
 			removeIfMandatory(resp.Id)
 			x, _ := json.Marshal(request.FromHttpResponse(resp))
 			//responses = append(responses, x)
-			_ = storage.Storage.Set(&memcache.Item{Key: "response_" + resp.Id, Value: x})
+			_ = Storage.Set(&memcache.Item{Key: "response_" + resp.Id, Value: x})
 			if len(mandatoryIds) == 0 {
 				return true
 			}
-			fmt.Println("Response for:", resp.Id)
+			changi.Log.Info("Response for:", resp.Id)
 		case <-ticker.C:
 			tickCount--
 			if tickCount == 0 {
-				fmt.Println("Ticker has reached to zero")
+				changi.Log.Info("Ticker has reached to zero")
 				if len(mandatoryIds) == 0 {
-					fmt.Println("Ending requester since the ticker is off finally")
+					changi.Log.Info("Ending requester since the ticker is off finally")
 					return true
 				}
 			}
