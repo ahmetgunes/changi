@@ -1,25 +1,25 @@
-package changi
+package storage
 
 import (
 	"encoding/json"
-	"github.com/ahmetgunes/changi/request"
+	"github.com/ahmetgunes/changi/internal/request"
 	"github.com/bradfitz/gomemcache/memcache"
 	"log"
 )
 
-var storage *memcache.Client
+var Storage *memcache.Client
 
-func connect(connectionString string) {
-	storage = memcache.New(connectionString)
+func Connect(connectionString string) {
+	Storage = memcache.New(connectionString)
 }
 
-func disconnect() {
-	storage = nil
+func Disconnect() {
+	Storage = nil
 }
 
-func fetchRequest(key string) (req []*request.AsyncRequest, status bool) {
+func FetchRequest(key string) (req []*request.AsyncRequest, status bool) {
 	//Implement decode json and fetch request
-	item, err := storage.Get("request_1")
+	item, err := Storage.Get("request_1")
 	if err != nil {
 		log.Fatal(err)
 		return nil, false
@@ -35,9 +35,9 @@ func fetchRequest(key string) (req []*request.AsyncRequest, status bool) {
 	return requests, true
 }
 
-func writeResponse(key string, asyncResponse request.AsyncResponse) bool {
+func WriteResponse(key string, asyncResponse request.AsyncResponse) bool {
 	data, _ := json.Marshal(asyncResponse)
-	err := storage.Set(&memcache.Item{Key: key, Value: data})
+	err := Storage.Set(&memcache.Item{Key: key, Value: data})
 	if err != nil {
 		log.Fatal(err)
 		return false

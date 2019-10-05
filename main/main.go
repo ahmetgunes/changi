@@ -1,7 +1,9 @@
 package main
 
-import "github.com/ahmetgunes/changi"
+import (
+	"github.com/ahmetgunes/changi/internal"
+)
 
 func main() {
-	changi.Test()
+	internal.Test()
 }

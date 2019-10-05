@@ -1,8 +1,8 @@
-package changi
+package internal
 
 import (
 	"fmt"
-	"github.com/ahmetgunes/changi/request"
+	"github.com/ahmetgunes/changi/internal/request"
 	"net/http"
 	"sync"
 )
