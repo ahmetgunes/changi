@@ -1,9 +1,10 @@
-package changi
+package internal
 
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/ahmetgunes/changi/request"
+	"github.com/ahmetgunes/changi/internal/request"
+	"github.com/ahmetgunes/changi/internal/storage"
 	"github.com/bradfitz/gomemcache/memcache"
 	"sync"
 	"time"
@@ -48,7 +49,7 @@ func controller(response chan request.Response, wg *sync.WaitGroup, count int) b
 			removeIfMandatory(resp.Id)
 			x, _ := json.Marshal(request.FromHttpResponse(resp))
 			responses = append(responses, x)
-			_ = storage.Set(&memcache.Item{Key: "response_" + resp.Id, Value: x})
+			_ = storage.Storage.Set(&memcache.Item{Key: "response_" + resp.Id, Value: x})
 			if len(mandatoryIds) == 0 {
 				return true
 			}
