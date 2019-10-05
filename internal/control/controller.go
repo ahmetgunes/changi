@@ -1,4 +1,4 @@
-package internal
+package control
 
 import (
 	"encoding/json"
@@ -13,7 +13,7 @@ import (
 var mandatoryIds []string
 var responses []request.AsyncResponse
 
-func start(requests []*request.AsyncRequest) {
+func Start(requests []*request.AsyncRequest) {
 	var wg sync.WaitGroup
 	//Open goroutines for each request
 	//Start a ticker
