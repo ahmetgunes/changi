@@ -19,7 +19,7 @@ func Disconnect() {
 
 func FetchRequest(key string) (req []*request.AsyncRequest, status bool) {
 	//Implement decode json and fetch request
-	item, err := Storage.Get("request_1")
+	item, err := Storage.Get(key)
 	if err != nil {
 		log.Fatal(err)
 		return nil, false
