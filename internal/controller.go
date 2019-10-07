@@ -2,6 +2,7 @@ package internal
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/ahmetgunes/changi"
 	"github.com/ahmetgunes/changi/internal/request"
 	"github.com/bradfitz/gomemcache/memcache"
@@ -20,6 +21,8 @@ func Start(requests []*request.AsyncRequest) {
 	//Start the processes with the controller which waits for responses from the requesters and determines timeouts
 	responseChan := make(chan request.Response)
 	progressChan := make(chan string)
+	defer close(responseChan)
+	defer close(progressChan)
 
 	count := 0
 	for i, request := range requests {
@@ -30,18 +33,16 @@ func Start(requests []*request.AsyncRequest) {
 		if request.Mandatory {
 			mandatoryIds = append(mandatoryIds, request.Id)
 		}
-		count = i
-		wg.Add(i)
+		count = i + 1
+		wg.Add(1)
 		go makeRequest(request.ToHttpRequest(), responseChan, progressChan, &wg)
 	}
-	wg.Add(count + 1)
-	go controller(responseChan, &wg)
+	wg.Add(1)
+	go controller(responseChan, &wg, count)
 	wg.Wait()
-	defer close(responseChan)
-	defer close(progressChan)
 }
 
-func controller(response chan request.Response, wg *sync.WaitGroup) bool {
+func controller(response chan request.Response, wg *sync.WaitGroup, count int) bool {
 	var ticker = time.NewTicker(1 * time.Millisecond)
 	var tickCount = 10000
 	defer wg.Done()
@@ -49,6 +50,7 @@ func controller(response chan request.Response, wg *sync.WaitGroup) bool {
 	for {
 		select {
 		case resp := <-response:
+			count--
 			removeIfMandatory(resp.Id)
 			marshalledResponse, _ := json.Marshal(request.FromHttpResponse(resp))
 			_ = Storage.Set(&memcache.Item{Key: "response_" + resp.Id, Value: marshalledResponse})
@@ -58,6 +60,7 @@ func controller(response chan request.Response, wg *sync.WaitGroup) bool {
 			changi.Log.Info("Gotten response for:", resp.Id, resp.Resp.StatusCode)
 		case <-ticker.C:
 			tickCount--
+			fmt.Println(tickCount)
 			if tickCount == 0 {
 				changi.Log.Info("Ticker has reached to zero")
 				if len(mandatoryIds) == 0 {
