@@ -13,9 +13,7 @@ func Init(logFile string) *logging.Logger {
 	}
 	writer := io.Writer(file)
 	logger := logging.MustGetLogger("changi")
-	format := logging.MustStringFormatter(
-		`[%{level:.4s}] | %{color}%{time} %{color:reset} %{message}`,
-	)
+	format := logging.MustStringFormatter(`[%{level:.4s}] | %{color}%{time} %{color:reset} %{message}`)
 	be := logging.NewLogBackend(writer, "Changi: ", 0)
 	formatter := logging.NewBackendFormatter(be, format)
 	logging.SetBackend(be, formatter)
