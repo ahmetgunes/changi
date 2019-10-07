@@ -9,11 +9,11 @@ import (
 
 var Storage *memcache.Client
 
-func Connect(connectionString string) {
+func ConnectStorage(connectionString string) {
 	Storage = memcache.New(connectionString)
 }
 
-func Disconnect() {
+func DisconnectStorage() {
 	Storage = nil
 }
 
