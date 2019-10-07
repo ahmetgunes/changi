@@ -5,6 +5,7 @@ import (
 	"github.com/ahmetgunes/changi"
 	"github.com/ahmetgunes/changi/internal/request"
 	"github.com/bradfitz/gomemcache/memcache"
+	"github.com/segmentio/ksuid"
 	"sync"
 	"time"
 )
@@ -23,21 +24,24 @@ func Start(requests []*request.AsyncRequest) {
 	count := 0
 	for i, request := range requests {
 		changi.Log.Info("Starting the request on", request.Id, request.Tag, i)
-		wg.Add(i)
+
+		request.Id = ksuid.New().String()
+		requests[i] = request
 		if request.Mandatory {
 			mandatoryIds = append(mandatoryIds, request.Id)
 		}
-		go makeRequest(request.ToHttpRequest(), responseChan, progressChan, &wg)
 		count = i
+		wg.Add(i)
+		go makeRequest(request.ToHttpRequest(), responseChan, progressChan, &wg)
 	}
 	wg.Add(count + 1)
-	go controller(responseChan, &wg, count)
+	go controller(responseChan, &wg)
 	wg.Wait()
 	defer close(responseChan)
 	defer close(progressChan)
 }
 
-func controller(response chan request.Response, wg *sync.WaitGroup, count int) bool {
+func controller(response chan request.Response, wg *sync.WaitGroup) bool {
 	var ticker = time.NewTicker(1 * time.Millisecond)
 	var tickCount = 10000
 	defer wg.Done()
@@ -46,13 +50,12 @@ func controller(response chan request.Response, wg *sync.WaitGroup, count int) b
 		select {
 		case resp := <-response:
 			removeIfMandatory(resp.Id)
-			x, _ := json.Marshal(request.FromHttpResponse(resp))
-			//responses = append(responses, x)
-			_ = Storage.Set(&memcache.Item{Key: "response_" + resp.Id, Value: x})
+			marshalledResponse, _ := json.Marshal(request.FromHttpResponse(resp))
+			_ = Storage.Set(&memcache.Item{Key: "response_" + resp.Id, Value: marshalledResponse})
 			if len(mandatoryIds) == 0 {
 				return true
 			}
-			changi.Log.Info("Response for:", resp.Id)
+			changi.Log.Info("Gotten response for:", resp.Id, resp.Resp.StatusCode)
 		case <-ticker.C:
 			tickCount--
 			if tickCount == 0 {
