@@ -3,9 +3,7 @@
     "url": "http://www.mocky.io/v2/5d77ebfe3200006e7f92408d",
     "method": "GET",
     "headers": {
-      "X-Tryout-Header": "1",
-      "X-Puzzle-Header": "Hilal",
-      "Accept-Encoding": "Hello"
+      "X-Tryout-Header": "On"
     },
     "tag": "200 Status Code",
     "timeout": 12.3
@@ -14,9 +12,7 @@
     "url": "http://www.mocky.io/v2/5d77eca83200006d7f924090",
     "method": "POST",
     "headers": {
-      "X-Tryout-Header": "1",
-      "X-Puzzle-Header": "Hilal",
-      "Accept-Encoding": "Hello"
+      "X-Tryout-Header": "On"
     },
     "tag": "400 Status Code",
     "timeout": 12.1,
@@ -26,9 +22,7 @@
     "url": "http://www.mocky.io/v2/5d77ed193200003d47924091?mocky-delay=100ms",
     "method": "POST",
     "headers": {
-      "X-Tryout-Header": "1",
-      "X-Puzzle-Header": "Hilal",
-      "Accept-Encoding": "Hello"
+      "X-Tryout-Header": "On"
     },
     "tag": "400 Status Code",
     "timeout": 10,
@@ -38,9 +32,7 @@
     "url": "http://www.mocky.io/v2/5d77ed193200003d47924091?mocky-delay=100ms",
     "method": "POST",
     "headers": {
-      "X-Tryout-Header": "1",
-      "X-Puzzle-Header": "Hilal",
-      "Accept-Encoding": "Hello"
+      "X-Tryout-Header": "On",
     },
     "tag": "400 Status Code",
     "timeout": 10,
@@ -50,9 +42,7 @@
     "url": "http://www.mocky.io/v2/5d8778bb340000f5570a151a?mocky-delay=6000ms",
     "method": "POST",
     "headers": {
-      "X-Tryout-Header": "1",
-      "X-Puzzle-Header": "Hilal",
-      "Accept-Encoding": "Hello"
+      "X-Tryout-Header": "On"
     },
     "tag": "400 Status Code",
     "timeout": 100,
