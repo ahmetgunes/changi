@@ -14,7 +14,7 @@ import (
 var mandatoryIds []string
 var responses []request.AsyncResponse
 
-func Start(requests []*request.AsyncRequest) {
+func Start(requests []*request.AsyncRequest, maxTimeOut int) {
 	var wg sync.WaitGroup
 	//Open goroutines for each request
 	//Start a ticker
@@ -38,19 +38,18 @@ func Start(requests []*request.AsyncRequest) {
 		go makeRequest(request.ToHttpRequest(), responseChan, progressChan, &wg)
 	}
 	wg.Add(1)
-	go controller(responseChan, &wg, count)
+	go controller(responseChan, &wg, maxTimeOut)
 	wg.Wait()
 }
 
-func controller(response chan request.Response, wg *sync.WaitGroup, count int) bool {
+func controller(response chan request.Response, wg *sync.WaitGroup, maxTimeOut int) bool {
 	var ticker = time.NewTicker(1 * time.Millisecond)
-	var tickCount = 10000
+	var tickCount = maxTimeOut * 1000
 	defer wg.Done()
 	defer ticker.Stop()
 	for {
 		select {
 		case resp := <-response:
-			count--
 			removeIfMandatory(resp.Id)
 			marshalledResponse, _ := json.Marshal(request.FromHttpResponse(resp))
 			_ = Storage.Set(&memcache.Item{Key: "response_" + resp.Id, Value: marshalledResponse})
