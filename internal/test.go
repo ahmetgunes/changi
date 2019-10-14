@@ -3,7 +3,6 @@ package internal
 import (
 	"github.com/ahmetgunes/changi"
 	"github.com/ahmetgunes/changi/internal/request"
-	"github.com/ahmetgunes/changi/internal/web"
 	"github.com/bradfitz/gomemcache/memcache"
 	"io/ioutil"
 	"path/filepath"
@@ -20,7 +19,7 @@ func Test() {
 	Start(requests, 60)
 }
 
-func NewRequest(newRequest web.NewRequest) {
+func Request(newRequest NewRequest) {
 	requests := fetchRequests(newRequest.RequestId)
 	Start(requests, newRequest.MaxTimeOut)
 }

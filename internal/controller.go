@@ -24,7 +24,6 @@ func Start(requests []*request.AsyncRequest, maxTimeOut int) {
 	defer close(responseChan)
 	defer close(progressChan)
 
-	count := 0
 	for i, request := range requests {
 		changi.Log.Info("Starting the request on", request.Id, request.Tag, i)
 
@@ -33,7 +32,6 @@ func Start(requests []*request.AsyncRequest, maxTimeOut int) {
 		if request.Mandatory {
 			mandatoryIds = append(mandatoryIds, request.Id)
 		}
-		count = i + 1
 		wg.Add(1)
 		go makeRequest(request.ToHttpRequest(), responseChan, progressChan, &wg)
 	}

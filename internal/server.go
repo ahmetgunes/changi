@@ -1,10 +1,9 @@
-package web
+package internal
 
 import (
 	"encoding/json"
 	"fmt"
 	"github.com/ahmetgunes/changi"
-	"github.com/ahmetgunes/changi/internal"
 	"net/http"
 )
 
@@ -16,7 +15,7 @@ type NewRequest struct {
 func Listen() {
 	http.HandleFunc("/new", new)
 	http.HandleFunc("/fetch", fetch)
-	_ := http.ListenAndServe(changi.Config.Port, nil)
+	http.ListenAndServe(changi.Config.Port, nil)
 }
 
 func new(rw http.ResponseWriter, req *http.Request) {
@@ -29,7 +28,7 @@ func new(rw http.ResponseWriter, req *http.Request) {
 	} else {
 		changi.Log.Debug("Requests are starting")
 		newRequest := readBodyFromRequest(req)
-		internal.NewRequest(newRequest)
+		Request(newRequest)
 	}
 }
 
