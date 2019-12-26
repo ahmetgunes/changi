@@ -24,6 +24,7 @@ type Request struct {
 
 func (asyncRequest *AsyncRequest) ToHttpRequest() Request {
 	//@TODO: Log creation
+	//@TODO: Add body to the request
 	httpReq, _ := http.NewRequest(asyncRequest.Method, asyncRequest.Url, nil)
 	for key, header := range asyncRequest.Headers {
 		httpReq.Header.Add(key, header)
